@@ -1,0 +1,15 @@
+<html>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+	var shareData; 
+	var socket = io('127.0.0.1:3001');
+	socket.on('news', function (data) {
+        shareData = data;
+        socket.emit('my other event', { my: 'reply' });
+        document.getElementById('demo').innerHTML = shareData.arduino;
+	});
+</script>
+<body>
+<div id='demo'>hallo arduino</div>
+</body>  
+</html>
