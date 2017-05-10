@@ -6,7 +6,7 @@ var portname = process.argv[2];
 
 
 var myPort = new SerialPort(portname, {
- baudRate: 115200,
+ baudRate: 9600,
  options: false,
  parser: serialport.parsers.readline("\r\n")
 });
@@ -16,22 +16,23 @@ myPort.on('error', function(){ console.log('some error - ?x it'); });
 var lastKey = -1, lastSpeed = -1;
 var shareData = undefined;
 myPort.on('data', function(data) {
+    console.log(data);
 	var dataArr = data.split(";");
 	var dataKey = dataArr[0];
 	if(dataKey != lastKey && data != 0){
-		console.log(dataKey);
+		//console.log(dataKey);
 		io.emit('sendKey', { keyPressed: parseInt(dataKey) });
 		 // establish connection with arduino example ' No idea if we need this line or what it does
 	}
 	var speed = parseInt(dataArr[1]);
 	//console.log(speed + "-" + lastSpeed);
 	if(speed != lastSpeed){
-		console.log("emitingSpeed")
-		io.emit('sendSpeed', { "speed": speed });
-		console.log("emited")
+		//console.log("emitingSpeed")
+		//io.emit('sendSpeed', { "speed": speed });
+		//console.log("emited")
 	}
 	lastKey = dataKey;
-	console.log("speed:" + speed + "- last: " + lastSpeed);
+	//console.log("speed:" + speed + "- last: " + lastSpeed);
 	lastSpeed = speed;
 });
 // server
