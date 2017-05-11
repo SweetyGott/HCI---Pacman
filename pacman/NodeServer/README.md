@@ -11,3 +11,17 @@ Pac-Man game written in HTML5 + CSS3 + jQuery with Canvas. This WebApp is a Resp
 <a href="https://87060b9f4949ec52ecb6a75e0388be0b4d345dad.googledrive.com/host/0B4HFlS9vdbwFQlJvRFU2NDVYMlk/">Play game</a>
 
 ### from https://github.com/luciopanepinto/pacman
+
+
+Changes from Original Games
+- pacman.js
+	game speed
+- game.js
+	drawing the speed in the game
+- ghosts.js
+	logic of the ghosts
+	QLearning
+- index.html
+	sending the game data to the arduino
+- tools.js
+	unknown

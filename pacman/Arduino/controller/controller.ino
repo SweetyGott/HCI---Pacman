@@ -1,4 +1,8 @@
+//Debug Messages in the Serial output
 //#define DEBUG
+
+//Using for the Calibration of the Adafruit Ring
+//#define ADAFRUIT_CALIBRATION
 
 /*** ##############################
 * Adafruit Neopixel Rings*/
@@ -69,7 +73,7 @@ VectorFloat gravity;    // [x, y, z]            gravity vector
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
 // ================================================================
-// ===               INTERRUPT DETECTION ROUTINE                ===
+// ===               INTERRUPT DETECTION ROUTINE FOR MPU        ===
 // ================================================================
 
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
@@ -86,58 +90,50 @@ void dmpDataReady() {
 * Haptric COntroller DRV2605L*/
 //#include "Adafruit_DRV2605.h"
 
+// ================================================================
+// ===               Adafruit Ring                              ===
+// ================================================================
+// Parameter 1 = number of pixels in strip
+// Parameter 2 = Arduino pin number (most are valid)
+// Parameter 3 = pixel type flags, add together as needed:
+//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
+//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
+//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
+//   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 //Small Ring
 #define PIN_SMALL_RING 9
 #define SMALL_RING_NUM_PIXELS 12
-Adafruit_NeoPixel small_ring = Adafruit_NeoPixel(60, PIN_SMALL_RING, NEO_GRB + NEO_KHZ800);
+#define SMALL_RING_OFFSET 8
+Adafruit_NeoPixel small_ring = Adafruit_NeoPixel(SMALL_RING_NUM_PIXELS, PIN_SMALL_RING, NEO_GRB + NEO_KHZ800);
 
 //Big Ring
 #define PIN_BIG_RING 8
 #define BIG_RING_NUM_PIXELS 24
-Adafruit_NeoPixel big_ring = Adafruit_NeoPixel(60, PIN_BIG_RING, NEO_GRB + NEO_KHZ800);
-
-
-/* Assign a unique ID to this sensor at the same time */
-//Adafruit_LSM303_Accel_Unified accel = Adafruit_LSM303_Accel_Unified(54321);
+#define BIG_RING_OFFSET 19
+Adafruit_NeoPixel big_ring = Adafruit_NeoPixel(BIG_RING_NUM_PIXELS, PIN_BIG_RING, NEO_GRB + NEO_KHZ800);
 
 //Haptic Driver
 //Adafruit_DRV2605 haptic_drv;
 
+#define BAUDERATE 115200
+//#define BAUDERATE 9600
 
 
-
-//  VARIABLES
-/*int pulsePin = 0;                 // Pulse Sensor purple wire connected to analog pin 0
-//int blinkPin = 13;                // pin to blink led at each beat*/
-
-/***Not needed neither***/
-// these variables are volatile because they are used during the interrupt service routine!
-/*volatile int BPM;                   // used to hold the pulse rate
-volatile int Signal;                // holds the incoming raw data
-volatile int IBI = 600;             // holds the time between beats, the Inter-Beat Interval
-volatile boolean Pulse = false;     // true when pulse wave is high, false when it's low
-volatile boolean QS = false;        // becomes true when Arduoino finds a beat.*/
-
-
-//still unclear
-/*const int leftButton = 2;
-const int upButton = 3;
-const int rightButton = 4;
-const int downButton = 5;
-const int ledPin =  13;
-#define potPin  "A5"
-int buttonState = 0;
-#define CDS_INPUT 0*/
 
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
-
 void setup() {
+#ifdef ADAFRUIT_CALIBRATION
+    int counter = 0;
+#else
     /*** set up the Adafruit rings***/
     small_ring.begin();
+    small_ring.setBrightness(64);
     small_ring.show(); // Initialize all pixels to 'off'
     big_ring.begin();
+    big_ring.setBrightness(64);
     big_ring.show(); // Initialize all pixels to 'off'
     
     /*** join I2C bus (I2Cdev library doesn't do this automatically)***/
@@ -185,18 +181,11 @@ void setup() {
         Serial.println(F("Initializing DMP..."));
     #endif
     devStatus = mpu.dmpInitialize();    
-  
-    /*pinMode(ledPin, OUTPUT);
-    pinMode(leftButton, INPUT);
-    pinMode(upButton, INPUT);
-    pinMode(rightButton, INPUT);
-    pinMode(downButton, INPUT);
-    Serial.begin(9600);*/
     
     //in case another board is used, I think not necessary 
     //sets clock to 16Mhz clock
     #if defined (__AVR_ATtiny85__)
-    if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
+        if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
     #endif
 
     // supply your own gyro offsets here, scaled for min sensitivity
@@ -240,26 +229,20 @@ void setup() {
 
     // configure LED for output
     pinMode(LED_PIN, OUTPUT);
+
+    //starting the haptic driver
+    //drv.begin();
+    //drv.setMode(DRV2605_MODE_REALTIME);
     
-  //Old LSM shit
-  /*   
-  if(!accel.begin())
-  {
-    // There was a problem detecting the LSM303 ... check your connections 
-    //Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
-   // while(1);
-  }*/
-
-  //starting the haptic driver
-  //drv.begin();
-  //drv.setMode(DRV2605_MODE_REALTIME);
-
-  /***NO Pulse Sensor at the moment***/
-  //interruptSetup();                 // sets up to read Pulse Sensor signal every 2mS 
+#endif 
 }
 
 uint32_t ghostColor[] ={small_ring.Color(0xff,0x00,0x00),small_ring.Color(0xfe,0x00,0xff),small_ring.Color(0x00,0xff,0x00),small_ring.Color(0xf9,0x9c,0x00)};
 
+
+// ================================================================
+// ===                      LOOP ROUTINE                        ===
+// ================================================================
 /*
  * Protocoll
  * receive:
@@ -273,6 +256,12 @@ uint32_t ghostColor[] ={small_ring.Color(0xff,0x00,0x00),small_ring.Color(0xfe,0
  * second: speed of PacMan max speed 1. Normal speed 15. The lower the value the faster is PacMan 
  */
 void loop(){
+#ifdef ADAFRUIT_CALIBRATION
+    uint32_t color_s = small_ring.Color(255, 0, 0);
+    setPixel_small(0,color_s);
+    uint32_t color_b = big_ring.Color(0, 255, 0);
+    setPixel_big(0,color_b);
+#else
     String inputString;
     byte buf[20];
     bool read = false;
@@ -367,9 +356,9 @@ void loop(){
         //uint8_t minDistance = minArr(buf);
         //drv.setRealtimeValue(max(0,0x30-(minDistance/2.5)));
         
-        int pacSpeed = getPacmanSpeed(60);
+        //int pacSpeed = getPacmanSpeed(60);
         //int pacSpeed = getPacmanSpeed(BPM); //heartValue/60+1;
-        Serial.println(String(value,DEC)+";"+String(pacSpeed,DEC)); 
+        Serial.println(String(value,DEC)+";"+String(15,DEC)); 
         
         /*if (value == HIGH) {
             digitalWrite(ledPin, HIGH);
@@ -382,57 +371,65 @@ void loop(){
         
         //delay(20);
     }
+#endif
 }
 
+//Gets the minimal distance of the 4 ghosts array
 uint16_t minArr(byte buf[]){
-   uint16_t min = 1000;
-   for(uint16_t ghost_id = 0; ghost_id < 4;++ghost_id){
-    if((uint8_t)buf[ghost_id+4] < min){
-      min = buf[ghost_id+4];
+    uint16_t min = 1000;
+    for(uint16_t ghost_id = 0; ghost_id < 4;++ghost_id){
+        if((uint8_t)buf[ghost_id+4] < min){
+            min = buf[ghost_id+4];
+        }
     }
-  }
-  return min;
+    return min;
 }
 
-
-int getPacmanSpeed(int bpm){
-  if (bpm > 200) bpm = 200;
-  return (200 - bpm)/20 + 8;
-}
-
-//sets the pixel of 
+//sets the pixel of the ghohsts
 void setGhost(uint16_t px, byte buf[]){
-  bool set = false;
-  for(uint16_t ghost_id = 0; ghost_id < 4;++ghost_id){
-    if(buf[ghost_id] == 0xff)
-      continue;
-    if(buf[ghost_id] == px && ghost_id == argMin((uint8_t) px,buf)){
-      setPixel(px,ghostColor[argMin((uint8_t) px,buf)]);
-      set = true;
+    bool set = false;
+    for(uint16_t ghost_id = 0; ghost_id < 4;++ghost_id){
+        //The Angle is defined with a value between 0 and 11
+        if(buf[ghost_id] == 0xff)
+            continue;
+        if(buf[ghost_id] == px && ghost_id == argMin((uint8_t) px,buf)){
+            setPixel_small(px,ghostColor[argMin((uint8_t) px,buf)]);
+            set = true;
+        }
     }
-  }
-  if(!set)
-    setPixel(px,0,0,0);
+    if(!set)
+        setPixel_small(px,0,0,0);
 }
 
+//Still unclear what it exactly does
 uint16_t argMin(uint8_t px, byte buf[]){
-   int64_t min = 1000;
-   uint16_t argMin = 20;
-   for(uint16_t ghost_id = 0; ghost_id < 4;++ghost_id){
-    if((uint8_t)buf[ghost_id+4] < min && (((uint8_t) buf[ghost_id])==px)){
-      min = buf[ghost_id+4];
-      argMin = ghost_id;
+    int64_t min = 1000;
+    uint16_t argMin = 20;
+    for(uint16_t ghost_id = 0; ghost_id < 4;++ghost_id){
+        if((uint8_t)buf[ghost_id+4] < min && (((uint8_t) buf[ghost_id])==px)){
+            min = buf[ghost_id+4];
+            argMin = ghost_id;
+        }
     }
-  }
-  return argMin;
+    return argMin;
 }
 
-void setPixel(uint16_t pixel, char r, char g, char b){
-  uint32_t color = small_ring.Color(r, g, b);
-  setPixel(pixel,color);
+void setPixel_small(uint16_t pixel, char r, char g, char b){
+    uint32_t color = small_ring.Color(r, g, b);
+    setPixel_small(pixel,color);
 }
 
-void setPixel(uint16_t pixel, uint32_t color){
-  small_ring.setPixelColor((pixel+1%12), color);
-  small_ring.show();
+void setPixel_small(uint16_t pixel, uint32_t color){
+    small_ring.setPixelColor((pixel+1+SMALL_RING_OFFSET)%SMALL_RING_NUM_PIXELS, color);
+    small_ring.show();
+}
+
+void setPixel_big(uint16_t pixel, char r, char g, char b){
+    uint32_t color = big_ring.Color(r, g, b);
+    setPixel_big(pixel,color);
+}
+
+void setPixel_big(uint16_t pixel, uint32_t color){
+    big_ring.setPixelColor((pixel+1+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, color);
+    big_ring.show();
 }
