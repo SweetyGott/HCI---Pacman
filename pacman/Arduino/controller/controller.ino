@@ -116,8 +116,8 @@ Adafruit_NeoPixel big_ring = Adafruit_NeoPixel(BIG_RING_NUM_PIXELS, PIN_BIG_RING
 //Haptic Driver
 //Adafruit_DRV2605 haptic_drv;
 
-#define BAUDERATE 115200
-//#define BAUDERATE 9600
+//#define BAUDERATE 115200
+#define BAUDERATE 9600
 
 
 
@@ -147,7 +147,7 @@ void setup() {
     // initialize serial communication
     // (115200 chosen because it is required for Teapot Demo output, but it's
     // really up to you depending on your project)
-    Serial.begin(9600);
+    Serial.begin(BAUDERATE);
     while (!Serial); // wait for Leonardo enumeration, others continue immediately
   
     // NOTE: 8MHz or slower host processors, like the Teensy @ 3.3v or Ardunio

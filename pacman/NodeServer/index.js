@@ -6,7 +6,7 @@ var portname = process.argv[2];
 
 
 var myPort = new SerialPort(portname, {
- baudRate: 115200,
+ baudRate: 9600,
  options: false,
  parser: serialport.parsers.readline("\r\n")
 });
@@ -56,10 +56,11 @@ io.on('connection', function (socket) {
 	bytes[index++] = getDistance(data.pinky,data.pacman);
 	bytes[index++] = getDistance(data.inky,data.pacman);
 	bytes[index++] = getDistance(data.clyde,data.pacman);
-	//console.log(bytes[0]);
-	//console.log(bytes[2]);
-	//console.log(bytes[4]);
-	//console.log(bytes[6])
+	console.log("Rot: "+bytes[0]+","+bytes[4]+
+		"     Blau: "+bytes[1]+","+bytes[5]+
+		"     Grün: "+bytes[2]+","+bytes[6]+
+		"     Orange: "+bytes[3]+","+bytes[7]);
+	//Fill up reamining bytes
 	for(;index<20;index++){
 		bytes[index] = 0;
 	}
