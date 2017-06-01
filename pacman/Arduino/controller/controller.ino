@@ -2,7 +2,7 @@
 //#define DEBUG
 
 //Using for the Calibration of the Adafruit Ring
-//#define ADAFRUIT_CALIBRATION
+#define ADAFRUIT_CALIBRATION
 
 /*** ##############################
 * Adafruit Neopixel Rings*/
@@ -104,13 +104,13 @@ void dmpDataReady() {
 //Small Ring
 #define PIN_SMALL_RING 9
 #define SMALL_RING_NUM_PIXELS 12
-#define SMALL_RING_OFFSET 8
+#define SMALL_RING_OFFSET 3
 Adafruit_NeoPixel small_ring = Adafruit_NeoPixel(SMALL_RING_NUM_PIXELS, PIN_SMALL_RING, NEO_GRB + NEO_KHZ800);
 
 //Big Ring
 #define PIN_BIG_RING 8
 #define BIG_RING_NUM_PIXELS 24
-#define BIG_RING_OFFSET 19
+#define BIG_RING_OFFSET 4
 Adafruit_NeoPixel big_ring = Adafruit_NeoPixel(BIG_RING_NUM_PIXELS, PIN_BIG_RING, NEO_GRB + NEO_KHZ800);
 
 //Haptic Driver
@@ -125,9 +125,6 @@ Adafruit_NeoPixel big_ring = Adafruit_NeoPixel(BIG_RING_NUM_PIXELS, PIN_BIG_RING
 // ===                      INITIAL SETUP                       ===
 // ================================================================
 void setup() {
-#ifdef ADAFRUIT_CALIBRATION
-    int counter = 0;
-#else
     /*** set up the Adafruit rings***/
     small_ring.begin();
     small_ring.setBrightness(64);
@@ -135,7 +132,10 @@ void setup() {
     big_ring.begin();
     big_ring.setBrightness(64);
     big_ring.show(); // Initialize all pixels to 'off'
-    
+
+#ifdef ADAFRUIT_CALIBRATION
+    int counter = 0;
+#else    
     /*** join I2C bus (I2Cdev library doesn't do this automatically)***/
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
         Wire.begin();
@@ -259,8 +259,9 @@ void loop(){
 #ifdef ADAFRUIT_CALIBRATION
     uint32_t color_s = small_ring.Color(255, 0, 0);
     setPixel_small(0,color_s);
-    uint32_t color_b = big_ring.Color(0, 255, 0);
-    setPixel_big(0,color_b);
+    //uint32_t color_b = big_ring.Color(0, 255, 0);
+    setWall(0);
+    setWall(2);
 #else
     String inputString;
     byte buf[20];
@@ -422,6 +423,12 @@ void setPixel_small(uint16_t pixel, char r, char g, char b){
 void setPixel_small(uint16_t pixel, uint32_t color){
     small_ring.setPixelColor((pixel+1+SMALL_RING_OFFSET)%SMALL_RING_NUM_PIXELS, color);
     small_ring.show();
+}
+
+void setWall(uint16_t area) {
+    setPixel_big(area*3, 255, 0, 0);
+    setPixel_big(area*3+1, 255, 0, 0);
+    setPixel_big(area*3+2, 255, 0, 0);
 }
 
 void setPixel_big(uint16_t pixel, char r, char g, char b){

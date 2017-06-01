@@ -56,6 +56,14 @@ io.on('connection', function (socket) {
 	bytes[index++] = getDistance(data.pinky,data.pacman);
 	bytes[index++] = getDistance(data.inky,data.pacman);
 	bytes[index++] = getDistance(data.clyde,data.pacman);
+    bytes[index++] = data.o;
+    bytes[index++] = data.or;
+    bytes[index++] = data.r;
+    bytes[index++] = data.ru;
+    bytes[index++] = data.u;
+    bytes[index++] = data.lu;
+    bytes[index++] = data.l;
+    bytes[index++] = data.lo;
 	console.log("Rot: "+bytes[0]+","+bytes[4]+
 		"     Blau: "+bytes[1]+","+bytes[5]+
 		"     Grün: "+bytes[2]+","+bytes[6]+
@@ -69,6 +77,7 @@ io.on('connection', function (socket) {
   });
 });
 
+//NeoSegment Pixel calculation for Ring
 function getNeoSegment(A,B) {
 	var cx = A.x; var cy = A.y;
 	var ex = B.x; var ey = B.y;
