@@ -188,26 +188,37 @@ function canMovePacman(direction) {
 
 	if (positionX === 276 && positionY === 204 && direction === 2) return false;
 
+	//WALL RESET
+	WALL_NEARBY_O = 1;
+	WALL_NEARBY_RO = 0;
+	WALL_NEARBY_R = 1;
+	WALL_NEARBY_RU = 0;
+	WALL_NEARBY_U = 1;
+	WALL_NEARBY_LU = 0;
+	WALL_NEARBY_L = 1;
+	WALL_NEARBY_LO = 0;
+
+	var can_move_pacman = false;
 	//Oben
-	positionX_O = positionX - PACMAN_POSITION_STEP*4;
-	positionY_O = positionY;
+	positionX_O = positionX;
+	positionY_O = positionY - PACMAN_POSITION_STEP;
 	//Oben-Rechts
 	positionX_RO = positionX - PACMAN_POSITION_STEP*2 ;
 	positionY_RO = positionY + PACMAN_POSITION_STEP*2;
 	//Rechts
-	positionX_R = positionX;
-	positionY_R = positionY + PACMAN_POSITION_STEP*4;
+	positionX_R = positionX + PACMAN_POSITION_STEP;
+	positionY_R = positionY;
 	//Rechts-Unten
 	positionX_RU = positionX + PACMAN_POSITION_STEP*2;
 	positionY_RU = positionY + PACMAN_POSITION_STEP*2;
 	//Unten
 	positionX_U = positionX;
-	positionY_U = positionY + PACMAN_POSITION_STEP*4;
+	positionY_U = positionY + PACMAN_POSITION_STEP;
 	//Links-Unten
 	positionX_LU = positionX + PACMAN_POSITION_STEP*2;
 	positionY_LU = positionY - PACMAN_POSITION_STEP*2;
 	//Links
-	positionX_L = positionX - PACMAN_POSITION_STEP*4;
+	positionX_L = positionX - PACMAN_POSITION_STEP;
 	positionY_L = positionY;
 	//Links-Oben
 	positionX_LO = positionX - PACMAN_POSITION_STEP*2;
@@ -239,7 +250,7 @@ function canMovePacman(direction) {
 		if (positionX_O >= startX && positionX_O <= endX && positionY_O >= startY && positionY_O <= endY) {
 			WALL_NEARBY_O = 0;
 		}
-		if (positionX_OR >= startX && positionX_OR <= endX && positionY_OR >= startY && positionY_OR <= endY) {
+		if (positionX_RO >= startX && positionX_RO <= endX && positionY_RO >= startY && positionY_RO <= endY) {
 			WALL_NEARBY_RO = 0;
 		}
 		if (positionX_R >= startX && positionX_R <= endX && positionY_R >= startY && positionY_R <= endY) {
@@ -263,11 +274,13 @@ function canMovePacman(direction) {
 
 		//Movement of Pacman
 		if (positionX >= startX && positionX <= endX && positionY >= startY && positionY <= endY) {
-			return true;
+			//return true;
+			can_move_pacman = true;
 		}
 	}
 
-	return false;
+	return can_move_pacman;
+	//return false;
 }
 
 function drawPacman() {

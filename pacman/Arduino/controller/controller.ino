@@ -2,7 +2,7 @@
 //#define DEBUG
 
 //Using for the Calibration of the Adafruit Ring
-#define ADAFRUIT_CALIBRATION
+//#define ADAFRUIT_CALIBRATION
 
 /*** ##############################
 * Adafruit Neopixel Rings*/
@@ -105,13 +105,21 @@ void dmpDataReady() {
 #define PIN_SMALL_RING 9
 #define SMALL_RING_NUM_PIXELS 12
 #define SMALL_RING_OFFSET 4
+#define SMALL_RING_BRIGHTNESS 64
 Adafruit_NeoPixel small_ring = Adafruit_NeoPixel(SMALL_RING_NUM_PIXELS, PIN_SMALL_RING, NEO_GRB + NEO_KHZ800);
 
 //Big Ring
 #define PIN_BIG_RING 8
 #define BIG_RING_NUM_PIXELS 24
 #define BIG_RING_OFFSET 5
+#define BIG_RING_BRIGHTNESS 64
 Adafruit_NeoPixel big_ring = Adafruit_NeoPixel(BIG_RING_NUM_PIXELS, PIN_BIG_RING, NEO_GRB + NEO_KHZ800);
+
+//YPR-CALIBRATION
+#define LEFT_RIGHT_SENSITY 20
+#define UP_DOWN_SENSITY 20
+#define YPR_1 3.68
+#define YPR_2 0.9
 
 //Haptic Driver
 //Adafruit_DRV2605 haptic_drv;
@@ -127,10 +135,10 @@ Adafruit_NeoPixel big_ring = Adafruit_NeoPixel(BIG_RING_NUM_PIXELS, PIN_BIG_RING
 void setup() {
     /*** set up the Adafruit rings***/
     small_ring.begin();
-    small_ring.setBrightness(64);
+    small_ring.setBrightness(SMALL_RING_BRIGHTNESS);
     small_ring.show(); // Initialize all pixels to 'off'
     big_ring.begin();
-    big_ring.setBrightness(64);
+    big_ring.setBrightness(BIG_RING_BRIGHTNESS);
     big_ring.show(); // Initialize all pixels to 'off'
 
 #ifdef ADAFRUIT_CALIBRATION
@@ -275,12 +283,12 @@ void loop(){
         //read the 20bytes from the games engine
         Serial.readBytes(buf_m,40);
 
-        for(int i = 0; i < 40; ++i){
+        /*for(int i = 0; i < 40; ++i){
             inputString += (int) buf_m[i];
             inputString += ";";  
         }
         Serial.println(String("INPUT:   ") + inputString);
-        inputString = "";
+        inputString = "";*/
 
         uint8_t state = 0;
         for(uint8_t i = 0; i < 40; i++) {
@@ -322,11 +330,11 @@ void loop(){
                         //set the position of the ghosts
                         setGhosts(buf);
 
-                        for(int j = 0; j < 16; ++j){
+                        /*for(int j = 0; j < 16; ++j){
                             inputString += (int) buf[j];
                             inputString += ";";  
                         }
-                        Serial.println(String("SUCCESS:   ") + inputString);
+                        Serial.println(String("SUCCESS:   ") + inputString);*/
     
                     } else {
                         //Serial.println(String("Fail at 11"));
@@ -399,13 +407,13 @@ void loop(){
         
         int value = 0;
         //set the Key pressed on gyro value
-        if( ypr[2] * 180/M_PI < -20 )
+        if( ypr[2] * 180/M_PI + YPR_2 < -LEFT_RIGHT_SENSITY )
             value = 37;//Pfeil Links
-        if( ypr[2] * 180/M_PI > 20 )
+        if( ypr[2] * 180/M_PI + YPR_2 > LEFT_RIGHT_SENSITY )
             value = 39;//Pfeil rechts
-        if( ypr[1] * 180/M_PI < -20 )
+        if( ypr[1] * 180/M_PI + YPR_1< -UP_DOWN_SENSITY )
             value = 38;//Pfeil oben
-        if( ypr[1] * 180/M_PI > 20 )
+        if( ypr[1] * 180/M_PI + YPR_1> UP_DOWN_SENSITY )
             value = 40;//Pfeil unten
         
         //Haptic Control

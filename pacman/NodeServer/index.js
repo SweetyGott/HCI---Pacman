@@ -16,7 +16,7 @@ myPort.on('error', function(){ console.log('some error - ?x it'); });
 var lastKey = -1, lastSpeed = -1;
 var shareData = undefined;
 myPort.on('data', function(data) {
-    console.log(data);
+    //console.log(data);
 	var dataArr = data.split(";");
 	var dataKey = dataArr[0];
 	if(dataKey != lastKey && data != 0){
@@ -68,13 +68,13 @@ io.on('connection', function (socket) {
     bytes[index++] = data.lo;
     bytes[index++] = 22;
     bytes[index++] = 11;
-	console.log("Rot: "+bytes[2]+","+bytes[6]+
+	/*console.log("Rot: "+bytes[2]+","+bytes[6]+
 		"     Blau: "+bytes[3]+","+bytes[7]+
 		"     Grün: "+bytes[4]+","+bytes[8]+
 		"     Orange: "+bytes[5]+","+bytes[9]+
         "\n  " + data.o + "\n " + data.lo + " " + data.ro + "\n" + data.l + "   " + data.r + "\n " + data.lu +
         " " + data.ru + "\n  " + data.u
-    );
+    );*/
     //console.log(bytes);
 	myPort.write(bytes);
   });
