@@ -16,7 +16,7 @@ myPort.on('error', function(){ console.log('some error - ?x it'); });
 var lastKey = -1, lastSpeed = -1;
 var shareData = undefined;
 myPort.on('data', function(data) {
-    console.log(data);
+    //console.log(data);
 	var dataArr = data.split(";");
 	var dataKey = dataArr[0];
 	if(dataKey != lastKey && data != 0){
@@ -48,6 +48,8 @@ io.on('connection', function (socket) {
   socket.on('updatePostion', function (data) {
   	const bytes = new Buffer(20);
 	var index = 0;
+    bytes[index++] = 99;
+    bytes[index++] = 88;
 	bytes[index++] = getNeoSegment(data.blinky,data.pacman);
 	bytes[index++] = getNeoSegment(data.pinky,data.pacman);
 	bytes[index++] = getNeoSegment(data.inky,data.pacman);
@@ -64,15 +66,16 @@ io.on('connection', function (socket) {
     bytes[index++] = data.lu;
     bytes[index++] = data.l;
     bytes[index++] = data.lo;
-	console.log("Rot: "+bytes[0]+","+bytes[4]+
-		"     Blau: "+bytes[1]+","+bytes[5]+
-		"     Grün: "+bytes[2]+","+bytes[6]+
-		"     Orange: "+bytes[3]+","+bytes[7]);
-	//Fill up reamining bytes
-	for(;index<20;index++){
-		bytes[index] = 0;
-	}
-
+    bytes[index++] = 22;
+    bytes[index++] = 11;
+	console.log("Rot: "+bytes[2]+","+bytes[6]+
+		"     Blau: "+bytes[3]+","+bytes[7]+
+		"     Grün: "+bytes[4]+","+bytes[8]+
+		"     Orange: "+bytes[5]+","+bytes[9]+
+        "\n  " + data.o + "\n " + data.lo + " " + data.ro + "\n" + data.l + "  " + data.r + "\n " + data.lu +
+        " " + data.ru + "\n  " + data.u
+    );
+    //console.log(bytes);
 	myPort.write(bytes);
   });
 });
@@ -87,6 +90,7 @@ function getNeoSegment(A,B) {
 	var dx = ex - cx;
 	var theta = Math.atan2(dx,dy); // range (-PI, PI]
 	theta *= 180 / Math.PI; // rads to degs, range (-180, 180]
+    theta -= 15; //adjusts the front light, movement yb half a light (-165, 195]
 	if (theta < 0) theta = 360 + theta; // range [0, 360)
 	return Math.floor((360-theta)/30)%12;
 }

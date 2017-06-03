@@ -2,7 +2,7 @@
 //#define DEBUG
 
 //Using for the Calibration of the Adafruit Ring
-#define ADAFRUIT_CALIBRATION
+//#define ADAFRUIT_CALIBRATION
 
 /*** ##############################
 * Adafruit Neopixel Rings*/
@@ -104,13 +104,13 @@ void dmpDataReady() {
 //Small Ring
 #define PIN_SMALL_RING 9
 #define SMALL_RING_NUM_PIXELS 12
-#define SMALL_RING_OFFSET 3
+#define SMALL_RING_OFFSET 4
 Adafruit_NeoPixel small_ring = Adafruit_NeoPixel(SMALL_RING_NUM_PIXELS, PIN_SMALL_RING, NEO_GRB + NEO_KHZ800);
 
 //Big Ring
 #define PIN_BIG_RING 8
 #define BIG_RING_NUM_PIXELS 24
-#define BIG_RING_OFFSET 4
+#define BIG_RING_OFFSET 5
 Adafruit_NeoPixel big_ring = Adafruit_NeoPixel(BIG_RING_NUM_PIXELS, PIN_BIG_RING, NEO_GRB + NEO_KHZ800);
 
 //Haptic Driver
@@ -237,7 +237,7 @@ void setup() {
 #endif 
 }
 
-uint32_t ghostColor[] ={small_ring.Color(0xff,0x00,0x00),small_ring.Color(0xfe,0x00,0xff),small_ring.Color(0x00,0xff,0x00),small_ring.Color(0xf9,0x9c,0x00)};
+uint32_t ghostColor[] ={small_ring.Color(0xff,0x00,0x00),small_ring.Color(0x00,0x00,0xff),small_ring.Color(0x00,0xff,0x00),small_ring.Color(0xff,0xa5,0x00)};
 
 
 // ================================================================
@@ -249,6 +249,7 @@ uint32_t ghostColor[] ={small_ring.Color(0xff,0x00,0x00),small_ring.Color(0xfe,0
  * 20byte array
  * 0-3: Neofruit segment of angle value 0-11. 0xff if ghost not on map
  * 4-7: Distance from Pacman. Unsigned Byte max value 255. If farer away also 255
+ * 8-15: Wall detection
  * 
  *Send:
  *String, Semikolon value
@@ -257,30 +258,82 @@ uint32_t ghostColor[] ={small_ring.Color(0xff,0x00,0x00),small_ring.Color(0xfe,0
  */
 void loop(){
 #ifdef ADAFRUIT_CALIBRATION
-    uint32_t color_s = small_ring.Color(255, 0, 0);
-    setPixel_small(0,color_s);
-    //uint32_t color_b = big_ring.Color(0, 255, 0);
-    setWall(0);
-    setWall(2);
+    setPixel_small(0,ghostColor[0]);
+    setPixel_small(3,ghostColor[1]);
+    setPixel_small(6,ghostColor[2]);
+    setPixel_small(9,ghostColor[3]);
+    
+    setPixel_big(0,ghostColor[0]);
 #else
     String inputString;
-    byte buf[20];
-    bool read = false;
+    byte buf_m[40];
+    byte* buf;
     
     if (Serial.available()) {
         //read the 20bytes from the games engine
-        read = true;
-        Serial.readBytes(buf,20);
-        for(int i = 0; i < 20; ++i){
-          inputString += (char) buf[i];  
-        }
+        Serial.readBytes(buf_m,40);
 
-        //set the position of the ghosts
-        for(int i = 0; i < SMALL_RING_NUM_PIXELS; ++i){
-          setGhost(i,buf);
+        /*for(int i = 0; i < 40; ++i){
+            inputString += (int) buf_m[i];
+            inputString += ";";  
         }
-        Serial.println(buf[0]);
-        //Serial.println(inputString); 
+        Serial.println(String("INPUT:   ") + inputString);
+        inputString = "";*/
+
+        uint8_t state = 0;
+        for(uint8_t i = 0; i < 40; i++) {
+            switch(state) {
+                case 0:
+                    if( buf_m[i] == 99 ) {
+                        //Serial.println(String("To 1 at: ") + i);
+                        state++;
+                    } else {
+                        state = 0;    
+                    }
+                    break;
+                case 1:
+                    if( buf_m[i] == 88 ) {
+                        //Serial.println(String("To 2 at: ") + i);
+                        state++;
+                        buf = buf_m + i + 1;
+                        i += 16;
+                    } else {
+                        //Serial.println(String("Fail at 22"));
+                        state = 0;
+                    }
+                    break;
+                case 2:
+                    if( buf_m[i] == 22 ) {
+                        //Serial.println(String("To 3 at: ") + i);
+                        state++;
+                    } else {
+                        //Serial.println(String("Fail at 22, was reading: ") + int(buf_m[i]) + " at Position: " + i);
+                        i = 40;
+                    }
+                    break;
+                case 3:
+                    if( buf_m[i] == 11 ) {
+                    
+                        //Wall detection
+                        setWalls(buf+8);
+                    
+                        //set the position of the ghosts
+                        setGhosts(buf);
+
+                        /*for(int j = 0; j < 18; ++j){
+                            inputString += (int) buf[j];
+                            inputString += ";";  
+                        }
+                        Serial.println(String("SUCCESS:   ") + inputString);*/
+    
+                    } else {
+                        //Serial.println(String("Fail at 11"));
+                    }
+                    i = 40;
+                    break;
+                default: break;
+            }
+        }
     }
 
     //===================================================
@@ -345,13 +398,13 @@ void loop(){
         int value = 0;
         //set the Key pressed on gyro value
         if( ypr[2] * 180/M_PI < -20 )
-         value = 39;//Serial.print("R"); 
+            value = 37;//Pfeil Links
         if( ypr[2] * 180/M_PI > 20 )
-          value = 37;//Serial.print("L"); 
+            value = 39;//Pfeil rechts
         if( ypr[1] * 180/M_PI < -20 )
-         value = 40;//Serial.print("U");
+            value = 38;//Pfeil oben
         if( ypr[1] * 180/M_PI > 20 )
-         value = 38;//Serial.print("D");
+            value = 40;//Pfeil unten
         
         //Haptic Control
         //uint8_t minDistance = minArr(buf);
@@ -386,49 +439,43 @@ uint16_t minArr(byte buf[]){
     return min;
 }
 
-//sets the pixel of the ghohsts
-void setGhost(uint16_t px, byte buf[]){
-    bool set = false;
-    for(uint16_t ghost_id = 0; ghost_id < 4;++ghost_id){
-        //The Angle is defined with a value between 0 and 11
-        if(buf[ghost_id] == 0xff)
-            continue;
-        if(buf[ghost_id] == px && ghost_id == argMin((uint8_t) px,buf)){
-            setPixel_small(px,ghostColor[argMin((uint8_t) px,buf)]);
-            set = true;
+//sets the Ghost of the inner Ring
+void setGhosts( byte buf[] ) {
+    for (uint16_t i = 0; i < SMALL_RING_NUM_PIXELS; i++ ) {
+        small_ring.setPixelColor(i, 0, 0, 0);
+    }
+    for (uint16_t i = 0; i < 4; i++) {
+        if(buf[i] != 0xff && buf[i+4] < 255) {
+            small_ring.setPixelColor((buf[i]+SMALL_RING_OFFSET)%SMALL_RING_NUM_PIXELS, ghostColor[i]);
         }
     }
-    if(!set)
-        setPixel_small(px,0,0,0);
+    small_ring.show();
 }
 
-//Still unclear what it exactly does
-uint16_t argMin(uint8_t px, byte buf[]){
-    int64_t min = 1000;
-    uint16_t argMin = 20;
-    for(uint16_t ghost_id = 0; ghost_id < 4;++ghost_id){
-        if((uint8_t)buf[ghost_id+4] < min && (((uint8_t) buf[ghost_id])==px)){
-            min = buf[ghost_id+4];
-            argMin = ghost_id;
+void setWalls(byte buf[]) {
+    for( uint16_t i = 0; i < 8; i++ ) {
+        if(buf[i] == 1) {
+            big_ring.setPixelColor((i*3+BIG_RING_OFFSET)%BIG_RING_OFFSET, 255, 0, 0);
+            big_ring.setPixelColor((i*3+1+BIG_RING_OFFSET)%BIG_RING_OFFSET, 255, 0, 0);
+            big_ring.setPixelColor((i*3+2+BIG_RING_OFFSET)%BIG_RING_OFFSET, 255, 0, 0);
+        } else {
+            big_ring.setPixelColor((i*3+BIG_RING_OFFSET)%BIG_RING_OFFSET, 0, 0, 0);
+            big_ring.setPixelColor((i*3+1+BIG_RING_OFFSET)%BIG_RING_OFFSET, 0, 0, 0);
+            big_ring.setPixelColor((i*3+2+BIG_RING_OFFSET)%BIG_RING_OFFSET, 0, 0, 0);
         }
     }
-    return argMin;
+    big_ring.show();
 }
 
+//TESTING, DEBUGGING & CONFIGURATION
 void setPixel_small(uint16_t pixel, char r, char g, char b){
     uint32_t color = small_ring.Color(r, g, b);
     setPixel_small(pixel,color);
 }
 
 void setPixel_small(uint16_t pixel, uint32_t color){
-    small_ring.setPixelColor((pixel+1+SMALL_RING_OFFSET)%SMALL_RING_NUM_PIXELS, color);
+    small_ring.setPixelColor((pixel+SMALL_RING_OFFSET)%SMALL_RING_NUM_PIXELS, color);
     small_ring.show();
-}
-
-void setWall(uint16_t area) {
-    setPixel_big(area*3, 255, 0, 0);
-    setPixel_big(area*3+1, 255, 0, 0);
-    setPixel_big(area*3+2, 255, 0, 0);
 }
 
 void setPixel_big(uint16_t pixel, char r, char g, char b){
@@ -437,6 +484,6 @@ void setPixel_big(uint16_t pixel, char r, char g, char b){
 }
 
 void setPixel_big(uint16_t pixel, uint32_t color){
-    big_ring.setPixelColor((pixel+1+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, color);
+    big_ring.setPixelColor((pixel+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, color);
     big_ring.show();
 }
