@@ -16,7 +16,7 @@ myPort.on('error', function(){ console.log('some error - ?x it'); });
 var lastKey = -1, lastSpeed = -1;
 var shareData = undefined;
 myPort.on('data', function(data) {
-    //console.log(data);
+    console.log(data);
 	var dataArr = data.split(";");
 	var dataKey = dataArr[0];
 	if(dataKey != lastKey && data != 0){
@@ -59,7 +59,7 @@ io.on('connection', function (socket) {
 	bytes[index++] = getDistance(data.inky,data.pacman);
 	bytes[index++] = getDistance(data.clyde,data.pacman);
     bytes[index++] = data.o;
-    bytes[index++] = data.or;
+    bytes[index++] = data.ro;
     bytes[index++] = data.r;
     bytes[index++] = data.ru;
     bytes[index++] = data.u;
@@ -72,7 +72,7 @@ io.on('connection', function (socket) {
 		"     Blau: "+bytes[3]+","+bytes[7]+
 		"     Grün: "+bytes[4]+","+bytes[8]+
 		"     Orange: "+bytes[5]+","+bytes[9]+
-        "\n  " + data.o + "\n " + data.lo + " " + data.ro + "\n" + data.l + "  " + data.r + "\n " + data.lu +
+        "\n  " + data.o + "\n " + data.lo + " " + data.ro + "\n" + data.l + "   " + data.r + "\n " + data.lu +
         " " + data.ru + "\n  " + data.u
     );
     //console.log(bytes);

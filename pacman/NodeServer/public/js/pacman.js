@@ -192,8 +192,8 @@ function canMovePacman(direction) {
 	positionX_O = positionX - PACMAN_POSITION_STEP*4;
 	positionY_O = positionY;
 	//Oben-Rechts
-	positionX_OR = positionX - PACMAN_POSITION_STEP*2 ;
-	positionY_OR = positionY + PACMAN_POSITION_STEP*2;
+	positionX_RO = positionX - PACMAN_POSITION_STEP*2 ;
+	positionY_RO = positionY + PACMAN_POSITION_STEP*2;
 	//Rechts
 	positionX_R = positionX;
 	positionY_R = positionY + PACMAN_POSITION_STEP*4;
@@ -240,7 +240,7 @@ function canMovePacman(direction) {
 			WALL_NEARBY_O = 0;
 		}
 		if (positionX_OR >= startX && positionX_OR <= endX && positionY_OR >= startY && positionY_OR <= endY) {
-			WALL_NEARBY_OR = 0;
+			WALL_NEARBY_RO = 0;
 		}
 		if (positionX_R >= startX && positionX_R <= endX && positionY_R >= startY && positionY_R <= endY) {
 			WALL_NEARBY_R = 0;

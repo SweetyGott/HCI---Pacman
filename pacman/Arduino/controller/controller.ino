@@ -2,7 +2,7 @@
 //#define DEBUG
 
 //Using for the Calibration of the Adafruit Ring
-//#define ADAFRUIT_CALIBRATION
+#define ADAFRUIT_CALIBRATION
 
 /*** ##############################
 * Adafruit Neopixel Rings*/
@@ -263,7 +263,9 @@ void loop(){
     setPixel_small(6,ghostColor[2]);
     setPixel_small(9,ghostColor[3]);
     
-    setPixel_big(0,ghostColor[0]);
+    //setPixel_big(0,ghostColor[0]);
+    byte b_a[8] = {1,0,1,0,1,0,1,0};
+    setWalls(b_a);
 #else
     String inputString;
     byte buf_m[40];
@@ -273,12 +275,12 @@ void loop(){
         //read the 20bytes from the games engine
         Serial.readBytes(buf_m,40);
 
-        /*for(int i = 0; i < 40; ++i){
+        for(int i = 0; i < 40; ++i){
             inputString += (int) buf_m[i];
             inputString += ";";  
         }
         Serial.println(String("INPUT:   ") + inputString);
-        inputString = "";*/
+        inputString = "";
 
         uint8_t state = 0;
         for(uint8_t i = 0; i < 40; i++) {
@@ -313,18 +315,18 @@ void loop(){
                     break;
                 case 3:
                     if( buf_m[i] == 11 ) {
-                    
+
                         //Wall detection
                         setWalls(buf+8);
                     
                         //set the position of the ghosts
                         setGhosts(buf);
 
-                        /*for(int j = 0; j < 18; ++j){
+                        for(int j = 0; j < 16; ++j){
                             inputString += (int) buf[j];
                             inputString += ";";  
                         }
-                        Serial.println(String("SUCCESS:   ") + inputString);*/
+                        Serial.println(String("SUCCESS:   ") + inputString);
     
                     } else {
                         //Serial.println(String("Fail at 11"));
@@ -452,16 +454,16 @@ void setGhosts( byte buf[] ) {
     small_ring.show();
 }
 
-void setWalls(byte buf[]) {
-    for( uint16_t i = 0; i < 8; i++ ) {
-        if(buf[i] == 1) {
-            big_ring.setPixelColor((i*3+BIG_RING_OFFSET)%BIG_RING_OFFSET, 255, 0, 0);
-            big_ring.setPixelColor((i*3+1+BIG_RING_OFFSET)%BIG_RING_OFFSET, 255, 0, 0);
-            big_ring.setPixelColor((i*3+2+BIG_RING_OFFSET)%BIG_RING_OFFSET, 255, 0, 0);
+void setWalls(byte buf_w[]) {
+    for( uint8_t i = 0; i < 8; i++ ) {
+        if(buf_w[i] == 1) {
+            big_ring.setPixelColor((i*3+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 255, 0, 0);
+            big_ring.setPixelColor((i*3+1+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 255, 0, 0);
+            big_ring.setPixelColor((i*3+2+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 255, 0, 0);
         } else {
-            big_ring.setPixelColor((i*3+BIG_RING_OFFSET)%BIG_RING_OFFSET, 0, 0, 0);
-            big_ring.setPixelColor((i*3+1+BIG_RING_OFFSET)%BIG_RING_OFFSET, 0, 0, 0);
-            big_ring.setPixelColor((i*3+2+BIG_RING_OFFSET)%BIG_RING_OFFSET, 0, 0, 0);
+            big_ring.setPixelColor((i*3+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 0, 0, 0);
+            big_ring.setPixelColor((i*3+1+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 0, 0, 0);
+            big_ring.setPixelColor((i*3+2+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 0, 0, 0);
         }
     }
     big_ring.show();
