@@ -88,7 +88,7 @@ void dmpDataReady() {
 
 /*** ##############################
 * Haptric COntroller DRV2605L*/
-//#include "Adafruit_DRV2605.h"
+#include "Adafruit_DRV2605.h"
 
 // ================================================================
 // ===               Adafruit Ring                              ===
@@ -125,7 +125,7 @@ Adafruit_NeoPixel big_ring = Adafruit_NeoPixel(BIG_RING_NUM_PIXELS, PIN_BIG_RING
 uint8_t direction_state;
 
 //Haptic Driver
-//Adafruit_DRV2605 haptic_drv;
+Adafruit_DRV2605 haptic_drv;
 
 #define BAUDERATE 115200
 //#define BAUDERATE 9600
@@ -244,9 +244,11 @@ void setup() {
     pinMode(LED_PIN, OUTPUT);
 
     //starting the haptic driver
-    //drv.begin();
-    //drv.setMode(DRV2605_MODE_REALTIME);
-    
+    haptic_drv.begin();
+    // I2C trigger by sending 'go' command 
+    // default, internal trigger when sending GO command
+    haptic_drv.setMode(DRV2605_MODE_REALTIME);
+    //haptic_drv.setMode(DRV2605_MODE_INTTRIG); 
 #endif 
 }
 
@@ -334,6 +336,13 @@ void loop(){
                     
                         //set the position of the ghosts
                         setGhosts(buf);
+
+                        //Haptic Control
+                        uint8_t minDistance = minArr(buf);
+                        haptic_drv.setRealtimeValue(max(0,0x30-(minDistance/2.5)));
+                        //haptic_drv.setRealtimeValue(0x10);
+                        //int pacSpeed = getPacmanSpeed(60);
+                        //int pacSpeed = getPacmanSpeed(BPM); //heartValue/60+1;
 
                         /*for(int j = 0; j < 16; ++j){
                             inputString += (int) buf[j];
@@ -434,12 +443,6 @@ void loop(){
         }
         Serial.println(String(direction_state,DEC)+";15"); 
         
-        //Haptic Control
-        //uint8_t minDistance = minArr(buf);
-        //drv.setRealtimeValue(max(0,0x30-(minDistance/2.5)));
-        
-        //int pacSpeed = getPacmanSpeed(60);
-        //int pacSpeed = getPacmanSpeed(BPM); //heartValue/60+1;
         
         /*if (value == HIGH) {
             digitalWrite(ledPin, HIGH);
