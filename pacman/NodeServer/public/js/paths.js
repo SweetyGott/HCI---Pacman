@@ -5,11 +5,11 @@ var PATHS_CANVAS_CONTEXT = null;
 PATHS define where pac man and the ghosts can move to
 */
 
-function initPaths() { 
+function initPaths() {
 	var canvas = document.getElementById('canvas-paths');
 	canvas.setAttribute('width', '550');
 	canvas.setAttribute('height', '550');
-	if (canvas.getContext) { 
+	if (canvas.getContext) {
 		PATHS_CANVAS_CONTEXT = canvas.getContext('2d');
 	}
 
@@ -23,15 +23,15 @@ function initPaths() {
 	PATHS.push("30,522-518,522");
 	PATHS.push("238,258-314,258");
 	PATHS.push("276,204-276,258");
-	
+
 	// LEFT
-	PATHS.push("128,26-128,470");
-	PATHS.push("30,26-244,26");
-	PATHS.push("30,26-30,150");
-	PATHS.push("30,150-128,150");
-	PATHS.push("244,26-244,98");
-	PATHS.push("186,204-186,364");
-	PATHS.push("30,364-244,364");
+	PATHS.push("128,26-128,470");//h
+	PATHS.push("30,26-244,26");//v
+	PATHS.push("30,26-30,150");//h
+	PATHS.push("30,150-128,150");//V
+	PATHS.push("244,26-244,98");//h
+	PATHS.push("186,204-186,364");//h
+	PATHS.push("30,364-244,364");//v
 	PATHS.push("244,364-244,416");
 	PATHS.push("30,364-30,416");
 	PATHS.push("30,416-70,416");
@@ -44,7 +44,7 @@ function initPaths() {
 	PATHS.push("244,470-244,522");
 	PATHS.push("186,470-244,470");
 	PATHS.push("186,416-186,470");
-	
+
 	// RIGHT
 	PATHS.push("422,26-422,470");
 	PATHS.push("304,26-518,26");
@@ -61,31 +61,31 @@ function initPaths() {
 	PATHS.push("518,470-518,522");
 	PATHS.push("304,150-304,204");
 	PATHS.push("304,150-362,150");
-	PATHS.push("362,98-362,150");	
+	PATHS.push("362,98-362,150");
 	PATHS.push("304,470-304,522");
 	PATHS.push("304,470-362,470");
 	PATHS.push("362,416-362,470");
-	
+
 }
 
-function getPathsCanevasContext() { 
+function getPathsCanevasContext() {
 	return PATHS_CANVAS_CONTEXT;
 }
 
-function drawPaths() { 
+function drawPaths() {
 	var ctx = getPathsCanevasContext();
-	
+
 	ctx.strokeStyle = "red";
-	
-	for (var i = 0, imax = PATHS.length; i < imax; i ++) { 
-	
+
+	for (var i = 0, imax = PATHS.length; i < imax; i ++) {
+
 		var p = PATHS[i];
-	
+
 		var startX = p.split("-")[0].split(",")[0];
 		var startY = p.split("-")[0].split(",")[1];
 		var endX = p.split("-")[1].split(",")[0];
 		var endY = p.split("-")[1].split(",")[1];
-		
+
 		ctx.beginPath();
 		ctx.moveTo(startX, startY);
 		ctx.lineTo(endX, endY);

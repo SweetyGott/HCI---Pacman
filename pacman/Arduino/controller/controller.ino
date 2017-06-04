@@ -115,17 +115,20 @@ Adafruit_NeoPixel small_ring = Adafruit_NeoPixel(SMALL_RING_NUM_PIXELS, PIN_SMAL
 #define BIG_RING_BRIGHTNESS 64
 Adafruit_NeoPixel big_ring = Adafruit_NeoPixel(BIG_RING_NUM_PIXELS, PIN_BIG_RING, NEO_GRB + NEO_KHZ800);
 
+
 //YPR-CALIBRATION
 #define LEFT_RIGHT_SENSITY 20
 #define UP_DOWN_SENSITY 20
 #define YPR_1 3.68
 #define YPR_2 0.9
 
+uint8_t direction_state;
+
 //Haptic Driver
 //Adafruit_DRV2605 haptic_drv;
 
-//#define BAUDERATE 115200
-#define BAUDERATE 9600
+#define BAUDERATE 115200
+//#define BAUDERATE 9600
 
 
 
@@ -141,8 +144,10 @@ void setup() {
     big_ring.setBrightness(BIG_RING_BRIGHTNESS);
     big_ring.show(); // Initialize all pixels to 'off'
 
+    direction_state = 255;
+
 #ifdef ADAFRUIT_CALIBRATION
-    int counter = 0;
+    //nothing to do
 #else    
     /*** join I2C bus (I2Cdev library doesn't do this automatically)***/
     #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -400,21 +405,34 @@ void loop(){
             Serial.print("ypr\t");
             Serial.print(ypr[0] * 180/M_PI);
             Serial.print("\t");
-            Serial.print(ypr[1] * 180/M_PI);
+            Serial.print(ypr[1] * 180/M_PI + YPR_1);
             Serial.print("\t");
-            Serial.println(ypr[2] * 180/M_PI);
+            Serial.println(ypr[2] * 180/M_PI + YPR_2);
         #endif
-        
-        int value = 0;
+
+        uint8_t direction_cur_state = 0;
+        double strengthness = 0;
         //set the Key pressed on gyro value
-        if( ypr[2] * 180/M_PI + YPR_2 < -LEFT_RIGHT_SENSITY )
-            value = 37;//Pfeil Links
-        if( ypr[2] * 180/M_PI + YPR_2 > LEFT_RIGHT_SENSITY )
-            value = 39;//Pfeil rechts
-        if( ypr[1] * 180/M_PI + YPR_1< -UP_DOWN_SENSITY )
-            value = 38;//Pfeil oben
-        if( ypr[1] * 180/M_PI + YPR_1> UP_DOWN_SENSITY )
-            value = 40;//Pfeil unten
+        double val = ypr[2] * 180/M_PI + YPR_2;
+        if( val < -LEFT_RIGHT_SENSITY && abs(val) > strengthness ) {
+            direction_state = 37;//Pfeil Links
+            strengthness = abs(val);
+        }
+        if( val > LEFT_RIGHT_SENSITY && abs(val) > strengthness ) {
+            direction_state = 39;//Pfeil rechts
+            strengthness = abs(val);
+        }
+        
+        val = ypr[1] * 180/M_PI + YPR_1;
+        if( val < -UP_DOWN_SENSITY && abs(val) > strengthness ) {
+            direction_state = 38;//Pfeil oben
+            strengthness = abs(val);
+        }   
+        if( val > UP_DOWN_SENSITY && abs(val) > strengthness ) {
+            direction_state = 40;//Pfeil unten
+            strengthness = abs(val);
+        }
+        Serial.println(String(direction_state,DEC)+";15"); 
         
         //Haptic Control
         //uint8_t minDistance = minArr(buf);
@@ -422,7 +440,6 @@ void loop(){
         
         //int pacSpeed = getPacmanSpeed(60);
         //int pacSpeed = getPacmanSpeed(BPM); //heartValue/60+1;
-        Serial.println(String(value,DEC)+";"+String(15,DEC)); 
         
         /*if (value == HIGH) {
             digitalWrite(ledPin, HIGH);
@@ -473,6 +490,22 @@ void setWalls(byte buf_w[]) {
             big_ring.setPixelColor((i*3+1+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 0, 0, 0);
             big_ring.setPixelColor((i*3+2+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 0, 0, 0);
         }
+    }
+
+    switch(direction_state) {
+        case 37: 
+            big_ring.setPixelColor((19+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 255, 255, 255);
+            break;
+        case 38:
+            big_ring.setPixelColor((1+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 255, 255, 255);
+            break;
+        case 39:
+            big_ring.setPixelColor((7+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 255, 255, 255);
+            break;
+        case 40:    
+            big_ring.setPixelColor((13+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 255, 255, 255);
+            break;
+        default: break;
     }
     big_ring.show();
 }

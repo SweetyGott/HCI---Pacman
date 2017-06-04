@@ -6,7 +6,7 @@ var portname = process.argv[2];
 
 
 var myPort = new SerialPort(portname, {
- baudRate: 9600,
+ baudRate: 115200,
  options: false,
  parser: serialport.parsers.readline("\r\n")
 });
