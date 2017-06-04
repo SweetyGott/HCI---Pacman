@@ -485,6 +485,10 @@ void setWalls(byte buf_w[]) {
             big_ring.setPixelColor((i*3+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 255, 0, 0);
             big_ring.setPixelColor((i*3+1+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 255, 0, 0);
             big_ring.setPixelColor((i*3+2+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 255, 0, 0);
+        } else if(buf_w[i] == 2) {
+            big_ring.setPixelColor((i*3+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 0, 0, 50);
+            big_ring.setPixelColor((i*3+1+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 0, 0, 50);
+            big_ring.setPixelColor((i*3+2+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 0, 0, 50);
         } else {
             big_ring.setPixelColor((i*3+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 0, 0, 0);
             big_ring.setPixelColor((i*3+1+BIG_RING_OFFSET)%BIG_RING_NUM_PIXELS, 0, 0, 0);

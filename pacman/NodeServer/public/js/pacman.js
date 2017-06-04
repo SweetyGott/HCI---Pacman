@@ -6,6 +6,7 @@ var WALL_NEARBY_U = 1;
 var WALL_NEARBY_LU = 1;
 var WALL_NEARBY_L = 1;
 var WALL_NEARBY_LO = 1;
+var LOOK_AHEAD = 100;
 
 var PACMAN_DIRECTION = 3;
 var PACMAN_DIRECTION_TRY = -1;
@@ -190,40 +191,29 @@ function canMovePacman(direction) {
 
 	//WALL RESET
 	WALL_NEARBY_O = 1;
-	WALL_NEARBY_RO = 0;
+	WALL_NEARBY_RO = 1;
 	WALL_NEARBY_R = 1;
-	WALL_NEARBY_RU = 0;
+	WALL_NEARBY_RU = 1;
 	WALL_NEARBY_U = 1;
-	WALL_NEARBY_LU = 0;
+	WALL_NEARBY_LU = 1;
 	WALL_NEARBY_L = 1;
-	WALL_NEARBY_LO = 0;
+	WALL_NEARBY_LO = 1;
 
 	var can_move_pacman = false;
 	//Oben
 	positionX_O = positionX;
 	positionY_O = positionY - PACMAN_POSITION_STEP;
-	//Oben-Rechts
-	positionX_RO = positionX - PACMAN_POSITION_STEP*2 ;
-	positionY_RO = positionY + PACMAN_POSITION_STEP*2;
 	//Rechts
 	positionX_R = positionX + PACMAN_POSITION_STEP;
 	positionY_R = positionY;
-	//Rechts-Unten
-	positionX_RU = positionX + PACMAN_POSITION_STEP*2;
-	positionY_RU = positionY + PACMAN_POSITION_STEP*2;
 	//Unten
 	positionX_U = positionX;
 	positionY_U = positionY + PACMAN_POSITION_STEP;
-	//Links-Unten
-	positionX_LU = positionX + PACMAN_POSITION_STEP*2;
-	positionY_LU = positionY - PACMAN_POSITION_STEP*2;
 	//Links
 	positionX_L = positionX - PACMAN_POSITION_STEP;
 	positionY_L = positionY;
-	//Links-Oben
-	positionX_LO = positionX - PACMAN_POSITION_STEP*2;
-	positionY_LO = positionY - PACMAN_POSITION_STEP*2;
 
+	//Virtual Step of Pacman, to see if it really possible
 	if ( direction === 1 ) {
 		positionX += PACMAN_POSITION_STEP;
 	} else if ( direction === 2 ) {
@@ -250,26 +240,14 @@ function canMovePacman(direction) {
 		if (positionX_O >= startX && positionX_O <= endX && positionY_O >= startY && positionY_O <= endY) {
 			WALL_NEARBY_O = 0;
 		}
-		if (positionX_RO >= startX && positionX_RO <= endX && positionY_RO >= startY && positionY_RO <= endY) {
-			WALL_NEARBY_RO = 0;
-		}
 		if (positionX_R >= startX && positionX_R <= endX && positionY_R >= startY && positionY_R <= endY) {
 			WALL_NEARBY_R = 0;
-		}
-		if (positionX_RU >= startX && positionX_RU <= endX && positionY_RU >= startY && positionY_RU <= endY) {
-			WALL_NEARBY_RU = 0;
 		}
 		if (positionX_U >= startX && positionX_U <= endX && positionY_U >= startY && positionY_U <= endY) {
 			WALL_NEARBY_U = 0;
 		}
-		if (positionX_LU >= startX && positionX_LU <= endX && positionY_LU >= startY && positionY_LU <= endY) {
-			WALL_NEARBY_LU = 0;
-		}
 		if (positionX_L >= startX && positionX_L <= endX && positionY_L >= startY && positionY_L <= endY) {
 			WALL_NEARBY_L = 0;
-		}
-		if (positionX_LO >= startX && positionX_LO <= endX && positionY_LO >= startY && positionY_LO <= endY) {
-			WALL_NEARBY_LO = 0;
 		}
 
 		//Movement of Pacman
@@ -277,6 +255,133 @@ function canMovePacman(direction) {
 			//return true;
 			can_move_pacman = true;
 		}
+	}
+
+	switch(PACMAN_DIRECTION){
+		//OBEN
+		case 4:
+			for (var i = 0, imax = PATHS_HORIZONTAL.length; i < imax; i ++) {
+				var p = PATHS_HORIZONTAL[i];
+				var c = p.split("-");
+				var cx = c[0].split(",");
+				var cy = c[1].split(",");
+
+				var startX = cx[0];
+				var startY = cx[1];
+				var endX = cy[0];
+				var endY = cy[1];
+
+				if( positionY_O - LOOK_AHEAD < startY && startY < positionY_O ) {
+					if( startX < positionX_O && endX >= positionX_O ) {
+						WALL_NEARBY_LO = 0;
+					}
+					if( startX <= positionX_O && endX > positionX_O ) {
+						WALL_NEARBY_RO = 0;
+					}
+				}
+			}
+			WALL_NEARBY_LU = 2;
+			WALL_NEARBY_RU = 2;
+			if (WALL_NEARBY_O == 1 && WALL_NEARBY_L == 0) {
+				WALL_NEARBY_LO = 0;
+			}
+			if (WALL_NEARBY_O == 1 && WALL_NEARBY_R == 0) {
+				WALL_NEARBY_RO = 0;
+			}
+			break;
+		//RECHTS
+		case 1:
+			for (var i = 0, imax = PATHS_VERTICAL.length; i < imax; i ++) {
+				var p = PATHS_VERTICAL[i];
+				var c = p.split("-");
+				var cx = c[0].split(",");
+				var cy = c[1].split(",");
+
+				var startX = cx[0];
+				var startY = cx[1];
+				var endX = cy[0];
+				var endY = cy[1];
+
+				if( positionX_R < startX && startX < positionX_R + LOOK_AHEAD ) {
+					if( startY < positionY_R && endY >= positionY_R ) {
+						WALL_NEARBY_RO = 0;
+					}
+					if( startY <= positionY_R && endY > positionY_R ) {
+						WALL_NEARBY_RU = 0;
+					}
+				}
+			}
+			WALL_NEARBY_LO = 2;
+			WALL_NEARBY_LU = 2;
+			if (WALL_NEARBY_R == 1 && WALL_NEARBY_O == 0) {
+				WALL_NEARBY_RO = 0;
+			}
+			if (WALL_NEARBY_R == 1 && WALL_NEARBY_U == 0) {
+				WALL_NEARBY_RU = 0;
+			}
+			break;
+		//UNTEN:
+		case 2:
+			for (var i = 0, imax = PATHS_HORIZONTAL.length; i < imax; i ++) {
+				var p = PATHS_HORIZONTAL[i];
+				var c = p.split("-");
+				var cx = c[0].split(",");
+				var cy = c[1].split(",");
+
+				var startX = cx[0];
+				var startY = cx[1];
+				var endX = cy[0];
+				var endY = cy[1];
+
+				if( positionY_U < startY && startY < positionY_U + LOOK_AHEAD ) {
+					if( startX < positionX_U && endX >= positionX_U ) {
+						WALL_NEARBY_LU = 0;
+					}
+					if( startX <= positionX_U && endX > positionX_U ) {
+						WALL_NEARBY_RU = 0;
+					}
+				}
+			}
+			WALL_NEARBY_LO = 2;
+			WALL_NEARBY_RO = 2;
+			if (WALL_NEARBY_U == 1 && WALL_NEARBY_R == 0) {
+				WALL_NEARBY_RU = 0;
+			}
+			if (WALL_NEARBY_U == 1 && WALL_NEARBY_L == 0) {
+				WALL_NEARBY_LU = 0;
+			}
+			break;
+		//LINKS:
+		case 3:
+			for (var i = 0, imax = PATHS_VERTICAL.length; i < imax; i ++) {
+				var p = PATHS_VERTICAL[i];
+				var c = p.split("-");
+				var cx = c[0].split(",");
+				var cy = c[1].split(",");
+
+				var startX = cx[0];
+				var startY = cx[1];
+				var endX = cy[0];
+				var endY = cy[1];
+
+				if( positionX_L - LOOK_AHEAD < startX && startX < positionX_L ) {
+					if( startY < positionY_L && endY >= positionY_L ) {
+						WALL_NEARBY_LO = 0;
+					}
+					if( startY <= positionY_L && endY > positionY_L ) {
+						WALL_NEARBY_LU = 0;
+					}
+				}
+			}
+			WALL_NEARBY_RO = 2;
+			WALL_NEARBY_RU = 2;
+			if (WALL_NEARBY_L == 1 && WALL_NEARBY_O == 0) {
+				WALL_NEARBY_LO = 0;
+			}
+			if (WALL_NEARBY_L == 1 && WALL_NEARBY_U == 0) {
+				WALL_NEARBY_LU = 0;
+			}
+			break;
 	}
 
 	return can_move_pacman;
