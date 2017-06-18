@@ -104,23 +104,24 @@ void dmpDataReady() {
 //Small Ring
 #define PIN_SMALL_RING 9
 #define SMALL_RING_NUM_PIXELS 12
-#define SMALL_RING_OFFSET 4
-#define SMALL_RING_BRIGHTNESS 64
+#define SMALL_RING_OFFSET 0
+#define SMALL_RING_BRIGHTNESS 255
 Adafruit_NeoPixel small_ring = Adafruit_NeoPixel(SMALL_RING_NUM_PIXELS, PIN_SMALL_RING, NEO_GRB + NEO_KHZ800);
 
 //Big Ring
 #define PIN_BIG_RING 8
 #define BIG_RING_NUM_PIXELS 24
-#define BIG_RING_OFFSET 5
-#define BIG_RING_BRIGHTNESS 64
+#define BIG_RING_OFFSET 11
+#define BIG_RING_BRIGHTNESS 255
 Adafruit_NeoPixel big_ring = Adafruit_NeoPixel(BIG_RING_NUM_PIXELS, PIN_BIG_RING, NEO_GRB + NEO_KHZ800);
 
 
 //YPR-CALIBRATION
 #define LEFT_RIGHT_SENSITY 20
 #define UP_DOWN_SENSITY 20
-#define YPR_1 3.68
-#define YPR_2 0.9
+#define YPR_0 -150
+#define YPR_1 16
+#define YPR_2 -4
 
 uint8_t direction_state;
 
@@ -274,13 +275,13 @@ uint32_t ghostColor[] ={small_ring.Color(0xff,0x00,0x00),small_ring.Color(0x00,0
 void loop(){
 #ifdef ADAFRUIT_CALIBRATION
     setPixel_small(0,ghostColor[0]);
-    setPixel_small(3,ghostColor[1]);
-    setPixel_small(6,ghostColor[2]);
-    setPixel_small(9,ghostColor[3]);
+    //setPixel_small(3,ghostColor[1]);
+    //setPixel_small(6,ghostColor[2]);
+    //setPixel_small(9,ghostColor[3]);
     
-    //setPixel_big(0,ghostColor[0]);
-    byte b_a[8] = {1,0,1,0,1,0,1,0};
-    setWalls(b_a);
+    setPixel_big(0,ghostColor[0]);
+    //byte b_a[8] = {1,0,1,0,1,0,1,0};
+    //setWalls(b_a);
 #else
     String inputString;
     byte buf_m[40];
