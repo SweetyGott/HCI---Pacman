@@ -8,6 +8,8 @@ var WALL_NEARBY_L = 1;
 var WALL_NEARBY_LO = 1;
 var LOOK_AHEAD = 100;
 
+var FORCE_SHOW_PACMAN = true;
+
 var PACMAN_DIRECTION = 3;
 var PACMAN_DIRECTION_TRY = -1;
 var PACMAN_DIRECTION_TRY_TIMER = null;
@@ -416,9 +418,12 @@ function drawPacman() {
 		endAngle = (1.15 + (PACMAN_MOUNTH_STATE * 0.05)) * Math.PI;
 		lineToY += 8;
 	}
-	ctx.arc(PACMAN_POSITION_X, PACMAN_POSITION_Y, PACMAN_SIZE, startAngle, endAngle, false);
-	ctx.lineTo(lineToX, lineToY);
-	ctx.fill();
+
+	if(FORCE_SHOW_PACMAN) {
+		ctx.arc(PACMAN_POSITION_X, PACMAN_POSITION_Y, PACMAN_SIZE, startAngle, endAngle, false);
+		ctx.lineTo(lineToX, lineToY);
+		ctx.fill();
+	}
 	ctx.closePath();
 }
 
